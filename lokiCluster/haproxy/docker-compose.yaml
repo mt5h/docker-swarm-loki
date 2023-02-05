@@ -1,0 +1,24 @@
+version: "3.9"
+
+services:
+  myingress:
+    image: haproxy:latest
+    deploy:
+      mode: replicated
+      replicas: 1
+    ports:
+      - "80:80"
+    command: "-f /haproxy.cfg"
+    configs:
+      - haproxy.cfg
+    dns:
+      - 127.0.0.1
+    networks:
+      - loki_loki
+networks:
+  loki_loki:
+    external: true
+
+configs:
+  haproxy.cfg:
+    file: ./config/haproxy.cfg

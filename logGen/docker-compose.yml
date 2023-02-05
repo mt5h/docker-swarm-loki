@@ -1,0 +1,26 @@
+version: '3.9'
+
+services:
+  log-generator:
+    image: mingrammer/flog
+    network_mode: "host"
+    command:
+      - --loop
+      - --format=json
+      - --number=100 # number of log lines to generate per second
+      - --delay=100ms # delay between log lines
+      - --output=/var/log/generated-logs.txt
+      - --overwrite
+      - --type=log
+    volumes:
+      - ./loki/:/var/log/
+
+  promtail:
+    image: grafana/promtail:2.7.3
+    network_mode: "host"
+    volumes:
+      - ./loki/:/var/log/
+      - ./config:/etc/promtail/
+    ports:
+      - "9080:9080"
+    command: -config.file=/etc/promtail/promtail.yaml

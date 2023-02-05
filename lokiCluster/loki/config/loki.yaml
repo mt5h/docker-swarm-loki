@@ -1,0 +1,109 @@
+auth_enabled: true
+analytics:
+    reporting_enabled: false
+
+common:
+  instance_interface_names:
+    - "eth0"
+  storage:
+    s3:
+      s3: "http://minioadmin:minioadmin@minio.:9000/loki"
+      s3forcepathstyle: true
+      insecure: true
+      sse_encryption: false
+  ring:
+    kvstore:
+      store: etcd
+      etcd:
+        endpoints: ["etcd-1:2379","etcd-2:2379","etcd-3:2379"]
+        dial_timeout: 10s
+        max_retries: 10
+        tls_enabled: false
+    instance_interface_names:
+      - "eth0"
+server:
+  http_listen_port: 3100
+  log_level: warn
+
+distributor:
+  ring:
+    kvstore:
+      store: etcd
+
+ingester:
+  lifecycler:
+    ring:
+      kvstore:
+        store: etcd
+      replication_factor: 1
+    final_sleep: 0s
+  chunk_idle_period: 5m
+  chunk_retain_period: 30s
+  wal:
+    enabled: true
+    dir: /loki/wal
+
+#memberlist:
+#  abort_if_cluster_join_fails: false
+#
+#  # Expose this port on all distributor, ingester
+#  # and querier replicas.
+#  bind_port: 7946
+#
+#  # You can use a headless k8s service for all distributor,
+#  # ingester and querier components.
+#  join_members:
+#  - loki:7946
+#
+#  max_join_backoff: 1m
+#  max_join_retries: 10
+#  min_join_backoff: 1s
+
+schema_config:
+  configs:
+  - from: 2020-05-15
+    store: boltdb-shipper
+    object_store: s3
+    schema: v11
+    index:
+      prefix: index_
+      period: 24h
+
+storage_config:
+  boltdb_shipper:
+    active_index_directory: /loki/index
+    cache_location: /loki/index_cache
+    resync_interval: 5s
+    shared_store: s3
+  aws:
+    s3: http://minioadmin:minioadmin@minio.:9000/loki
+    s3forcepathstyle: true
+
+index_gateway:
+  mode: simple
+  ring:
+    kvstore:
+      store: etcd
+
+limits_config:
+  enforce_metric_name: false
+  reject_old_samples: true
+  reject_old_samples_max_age: 168h
+
+compactor:
+  working_directory: /loki/boltdb-shipper-compactor
+  shared_store: aws
+
+ruler:
+  storage:
+    type: local
+    local:
+      directory: /tmp/rules
+  rule_path: /tmp/scratch
+  alertmanager_url: http://alertmanager:9093
+  ring:
+    kvstore:
+      store: etcd
+  enable_api: true
+  enable_sharding: true
+

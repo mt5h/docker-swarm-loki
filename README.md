@@ -58,8 +58,9 @@ auth_enabled: false
  - <https://www.haproxy.com/blog/haproxy-on-docker-swarm-load-balancing-and-dns-service-discovery>
 
 ## Check links
-http://swarm-address/stats
-http://loki.local/distributor/ring
-http://loki.local/config
-http://loki.local/metrics
+Check your cluster status with:
+  - <http://swarm-address/stats> (admin:password123)
+  - <http://loki.local/distributor/ring>
+  - <http://loki.local/config>
+  - <http://loki.local/metrics>
 
